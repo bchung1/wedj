@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Wedj Instance</title>
+</head>
+<body>
+	<iframe src="https://embed.spotify.com/?uri=spotify:trackset:PREFEREDTITLE:12VWzyPDBCc8fqeWCAfNwR,37FXw5QGFN7uwwsLy8uAc0" frameborder="0" allowtransparency="true"></iframe>
+
+
+
+
+	<script>
+	var socket = io(); 
+	$('form').submit(function(){
+		socket.emit('chat message', $('#m').val());
+		$('#m').val('');
+		return false; 
+	}); 
+
+	socket.on('chat message', function(msg){
+		var d = new Date(); 
+		
+		$('#messages').append($('<li>').text(msg));
+	});
+	</script>
+</body>
+</html>
+

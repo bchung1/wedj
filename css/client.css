@@ -1,0 +1,29 @@
+header{
+	background-image: url("../img/records.jpeg");
+	background-color: #263d36;
+	background-position: center top;
+	background-repeat: no-repeat;
+	background-size: cover;
+	height:30em;
+}
+
+header h1{ 
+	font-family: 'Pacifico', cursive;
+	color:white;
+	font-size:14vw;
+}
+
+.container { 
+	max-width: 50em;
+	padding: 3em 3em; 
+}
+
+
+.column { 
+	background-color:red;
+}
+
+#records_img {
+	max-height:30em;
+	width:100%;
+}
