@@ -18,6 +18,10 @@ header h1{
 	padding: 3em 3em; 
 }
 
+.container h1 { 
+	font-size:3em;
+}
+
 
 .column { 
 	background-color:red;
