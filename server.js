@@ -10,15 +10,32 @@ app.get('/', function(req, res){
 	res.sendFile(__dirname + '/public/client.html');
 });
 
-io.on('connection', function(socket){
-	console.log('a user connected');
+app.get('/host', function(req, res) { 
+	res.sendFile(__dirname + '/public/host.html')
+}); 
+
+var client = io.of('/client');
+client.on('connection', function(socket){
+	console.log('a client connected');
 	socket.on('disconnect', function(){
-		console.log('user disconnected');
+		console.log('a client disconnected');
 	});
 
 	socket.on('new track', function(track){
-		 io.emit('new track', track);
+		 client.emit('new track', track);
 	});
+});
+
+var host = io.of('/host');
+host.on('connection', function(socket){
+	console.log('a host connected');
+	socket.on('disconnect', function(){
+		console.log('a host disconnected');
+	});
+	socket.on('add TrackID', function(trackID){ 
+		console.log(trackID);
+		host.emit('add TrackID', trackID);
+	}); 
 });
 
 http.listen(3000, function(){ 

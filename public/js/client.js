@@ -1,7 +1,12 @@
-var socket = io(); 
+var client = io('/client');
+var host = io('/host');
+var tracks = [
+		{name: 'We Don\'t talk anymore', votes: 0},
+		{name: 'One Dance', votes: 0}
+		];
 
-socket.on('new track', function(track){
-	console.log(track);
+client.on('new track', function(track){
+	tracks.push(track);
 });
 
 var app = new Vue({ 
@@ -9,10 +14,7 @@ var app = new Vue({
 	data: {
 		trackName:'', 
 		artistName:'',
-		tracks: [
-		{name: 'We Don\'t talk anymore', votes: 0},
-		{name: 'One Dance', votes: 0}
-		]
+		tracks: tracks
 	},
 	methods:{
 		addTrack: function(){ 
@@ -38,8 +40,9 @@ var app = new Vue({
 						var song = response.tracks.items[0].name; 
 						var artist = response.tracks.items[0].artists[0].name; 
 						var trackID = response.tracks.items[0].id; 
-						socket.emit('new track', trackID);
-						vue.tracks.push({name: song + ' by ' + artist});
+						var newTrack = {name: song + ' by ' + artist, votes: 0};
+						client.emit('new track', newTrack);
+						host.emit('add TrackID', trackID);
 					}
 
 				}
