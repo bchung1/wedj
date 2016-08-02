@@ -1,14 +1,8 @@
-// Initialize Firebase
-var config = {
-	apiKey: "AIzaSyAsn9C7nSumjDhg1P0mhwJ7A4E-ECxEuJs",
-	authDomain: "wedj-b6fda.firebaseapp.com",
-	databaseURL: "https://wedj-b6fda.firebaseio.com",
-	storageBucket: "",
-};
-firebase.initializeApp(config);
+var socket = io(); 
 
-var database = firebase.database(); 
-
+socket.on('new track', function(track){
+	console.log(track);
+});
 
 var app = new Vue({ 
 	el:'#app',
@@ -32,6 +26,7 @@ var app = new Vue({
 		}, 
 		validateTrack: function(songName, artistName) { 
 			var query = songName + ' artist:' + artistName;
+			var vue = this; 
 			$.ajax({ 
 				url: 'http://api.spotify.com/v1/search',
 				data: { 
@@ -40,18 +35,16 @@ var app = new Vue({
 				}, 
 				success: function(response){
 					if(response.tracks.items.length){
+						var song = response.tracks.items[0].name; 
+						var artist = response.tracks.items[0].artists[0].name; 
 						var trackID = response.tracks.items[0].id; 
-						console.log(trackID);
+						socket.emit('new track', trackID);
+						vue.tracks.push({name: song + ' by ' + artist});
 					}
+
 				}
 			}); 
 		}
 	}
 }); 
-
-
-
-
-
-
 
