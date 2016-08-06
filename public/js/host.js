@@ -1,4 +1,4 @@
-var host = io('/host');
+var host = io();
 
 host.on('add TrackID', function(trackID){ 
 	var appendTrack = $('iframe').attr('src') + ',' + trackID; 

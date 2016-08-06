@@ -1,13 +1,28 @@
-var client = io('/client');
-var host = io('/host');
+var wedj = io('/wedj');
 var tracks = [
 		{name: 'We Don\'t talk anymore', votes: 0},
 		{name: 'One Dance', votes: 0}
 		];
+var access_token, 
+	refresh_token,
+	userID, 
+	playlistID; 
 
-client.on('new track', function(track){
+wedj.on('new track', function(track){
 	tracks.push(track);
 });
+
+wedj.on('access/refresh token', function(tokens){
+	access_token = tokens.access_token; 
+	refresh_token = tokens.refresh_token;
+}); 
+
+wedj.on('start', function(userData){
+	userID = userData.userID; 
+	playlistID = userData.playlistID; 
+	console.log(userID); 
+	console.log(playlistID);
+}); 
 
 var app = new Vue({ 
 	el:'#app',
@@ -18,15 +33,16 @@ var app = new Vue({
 	},
 	methods:{
 		addTrack: function(){ 
+			console.log('add Track');
 			var trimTrackName = this.trackName.trim(); 
 			var trimArtistName = this.artistName.trim();
 			if(trimTrackName != '' && trimArtistName != ''){
-				this.validateTrack(trimTrackName, trimArtistName); 
+				this.searchTrack(trimTrackName, trimArtistName); 
 			}
 			this.trackName = '';
 			this.artistName = '';
 		}, 
-		validateTrack: function(songName, artistName) { 
+		searchTrack: function(songName, artistName) { 
 			var query = songName + ' artist:' + artistName;
 			var vue = this; 
 			$.ajax({ 
@@ -40,11 +56,12 @@ var app = new Vue({
 						var song = response.tracks.items[0].name; 
 						var artist = response.tracks.items[0].artists[0].name; 
 						var trackID = response.tracks.items[0].id; 
-						var newTrack = {name: song + ' by ' + artist, votes: 0};
-						client.emit('new track', newTrack);
-						host.emit('add TrackID', trackID);
+						var newTrack = {trackID: trackID, trackInfo: {name: song + ' by ' + artist, votes: 0}};
+						console.log(newTrack);
+						wedj.emit('new track', newTrack, function(msg){
+							console.log("Track added:" + msg);
+						});
 					}
-
 				}
 			}); 
 		}
