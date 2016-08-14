@@ -5,15 +5,33 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http); 
 var request = require('request');
 var querystring = require('querystring');
+var mongoose = require('mongoose');
 
-var clientID = "";
-var clientSecret = "";
-var redirect_uri = ""; 
+var clientID = "CLIENT-ID";
+var clientSecret = "CLIENT-SECRET";  
+var redirect_uri = "REDIRECT-URI"; 
 var scope = "playlist-modify-public playlist-modify-private";
 var userID;
 var playlistID; 
 var access_token; 
 var refresh_token;
+
+
+
+/* SCHEMA AND MODEL */
+mongoose.connect('mongodb://localhost/wedj');
+var Schema = mongoose.Schema;
+var trackSchema = new Schema({
+	artist: String, 
+	song: String, 
+	votes: Number
+}); 
+
+var Track = mongoose.model('Track', trackSchema);
+/* SCHEMA AND MODEL*/
+
+
+
 
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -57,6 +75,15 @@ app.get('/callback', function(req, res){
 var wedj = io.of('/wedj');
 wedj.on('connection', function(socket){
 	console.log('a client connected');
+	Track.find({}, function(err, tracks) {
+		if (!err){ 
+			var tracks = tracks.map(function(track) { 
+				return {song: track.song, artist: track.artist, votes: track.votes}
+			}); 
+			wedj.emit('load tracks', tracks); 
+		} else {throw err;}
+	});
+
 	socket.on('disconnect', function(){
 		console.log('a client disconnected');
 	});
@@ -67,6 +94,7 @@ wedj.on('connection', function(socket){
 		}else{ 
 			wedj.emit('new track', newTrack.trackInfo);
 			addTrack(newTrack.trackID);
+			addTrackToDB(newTrack.trackInfo);
 			callback('success');
 		}
 	});
@@ -94,11 +122,13 @@ var authorizeApplication = function() {
 
 var addTrack = function(trackID) { 
 	var url = "https://api.spotify.com/v1/users/";
-		url += userID; 
-		url += '/playlists/';
-		url += playlistID;
-		url += '/tracks?uris=spotify:track:';
-		url += trackID;
+	url += userID; 
+	url += '/playlists/';
+	url += playlistID;
+	url += '/tracks?uris=spotify:track:';
+	url += trackID;
+
+	console.log(url);
 
 	var options = {
 		url: url,
@@ -109,6 +139,25 @@ var addTrack = function(trackID) {
 	request.post(options, function(error, response, body){
 		if(error){
 			console.log(error);
+		}else{
+			console.log('track added');
+		}
+	});
+}
+
+
+var addTrackToDB = function(trackInfo){
+	var newTrack = new Track({
+		artist: trackInfo.artist, 
+		song: trackInfo.song, 
+		votes: 0
+	}); 
+	newTrack.save( function(error, data){
+		if(error){
+			console.log('Track could not be added to DB');
+		}
+		else{
+			console.log('Track added to DB');
 		}
 	});
 }
